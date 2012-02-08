@@ -1,0 +1,18 @@
+ActsAsFeatured
+==========
+
+This is a minor variation on acts_as_list. If the position is nil then the object is not featured. 
+
+
+Example
+=======
+
+  class Authors < ActiveRecord::Base
+    acts_as_featured
+  end
+  
+  Authors.featured
+
+
+blatantly borrowed from acts_as_list (https://github.com/swanandp/acts_as_list) which is (c) David Heinemeier Hansson
+Copyright (c) 2012 Seth Faxon, released under the MIT license
