@@ -1,14 +1,14 @@
-ActsAsFeatured
+HasFeatures
 ==========
 
-This is a minor variation on acts_as_list. If the position is nil then the object is not featured. 
+This is a minor variation on acts_as_list, with a terrible name. If the position is nil then the object is not featured. 
 
 
 Example
 =======
 
   class Authors < ActiveRecord::Base
-    acts_as_featured
+    has_features
   end
   
   Authors.featured

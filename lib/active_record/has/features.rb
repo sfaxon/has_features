@@ -1,11 +1,11 @@
 module ActiveRecord
-  module Acts #:nodoc:
-    module Featured #:nodoc:
+  module Has #:nodoc:
+    module Features #:nodoc:
       def self.included(base)
         base.extend(ClassMethods)
       end
 
-      # This +acts_as+ extension provides the capabilities for sorting and reordering a number of objects in a list.
+      # This +has+ extension provides the capabilities for sorting and reordering a number of objects in a list.
       # The class that has this specified needs to have a +featured_position+ column defined as an integer on
       # the mapped database table.
       #
@@ -17,7 +17,7 @@ module ActiveRecord
       #
       #   class Author < ActiveRecord::Base
       #     belongs_to :todo_list
-      #     acts_as_featured :scope => :organization
+      #     has_features :scope => :organization
       #   end
       #
       #   author.featured = true
@@ -28,8 +28,8 @@ module ActiveRecord
         # * +scope+ - restricts what is to be considered a list. Given a symbol, it'll attach <tt>_id</tt> 
         #   (if it hasn't already been added) and use that as the foreign key restriction. It's also possible 
         #   to give it an entire string that is interpolated if you need a tighter scope than just a foreign key.
-        #   Example: <tt>acts_as_featured :scope => 'todo_list_id = #{todo_list_id} AND completed = 0'</tt>
-        def acts_as_featured(options = {})
+        #   Example: <tt>has_features :scope => 'todo_list_id = #{todo_list_id} AND completed = 0'</tt>
+        def has_features(options = {})
           configuration = { :column => "featured_position", :scope => "1 = 1" }
           configuration.update(options) if options.is_a?(Hash)
 
@@ -55,13 +55,13 @@ module ActiveRecord
           end
 
           class_eval <<-EOV
-            include ActiveRecord::Acts::Featured::InstanceMethods
+            include ActiveRecord::Has::Features::InstanceMethods
             
             def featured_position_column
               '#{configuration[:column]}'
             end
             
-            def acts_as_featured_class
+            def has_features_class
               ::#{self.name}
             end
             
@@ -74,7 +74,7 @@ module ActiveRecord
         end
       end
 
-      # All the methods available to a record that has had <tt>acts_as_featured</tt> specified. Each method works
+      # All the methods available to a record that has had <tt>has_features</tt> specified. Each method works
       # by assuming the object to be the item in the list, so <tt>chapter.move_lower</tt> would move that chapter
       # lower in the list of all chapters. Likewise, <tt>chapter.first?</tt> would return +true+ if that chapter is
       # the first in the list of all chapters.
@@ -88,7 +88,7 @@ module ActiveRecord
         def move_lower
           return unless lower_item
 
-          acts_as_featured_class.transaction do
+          has_features_class.transaction do
             lower_item.decrement_position
             increment_position
           end
@@ -98,7 +98,7 @@ module ActiveRecord
         def move_higher
           return unless higher_item
 
-          acts_as_featured_class.transaction do
+          has_features_class.transaction do
             higher_item.increment_position
             decrement_position
           end
@@ -108,7 +108,7 @@ module ActiveRecord
         # position adjusted accordingly.
         def move_to_bottom
           return unless in_list?
-          acts_as_featured_class.transaction do
+          has_features_class.transaction do
             decrement_positions_on_lower_featured_items
             assume_bottom_position
           end
@@ -118,7 +118,7 @@ module ActiveRecord
         # position adjusted accordingly.
         def move_to_top
           return unless in_list?
-          acts_as_featured_class.transaction do
+          has_features_class.transaction do
             increment_positions_on_higher_items
             assume_top_position
           end
@@ -159,7 +159,7 @@ module ActiveRecord
         # Return the next higher item in the list.
         def higher_item
           return nil unless in_list?
-          acts_as_featured_class.find(:first, :conditions =>
+          has_features_class.find(:first, :conditions =>
             "#{scope_condition} AND #{featured_position_column} = #{(send(featured_position_column).to_i - 1).to_s}"
           )
         end
@@ -167,7 +167,7 @@ module ActiveRecord
         # Return the next lower item in the list.
         def lower_item
           return nil unless in_list?
-          acts_as_featured_class.find(:first, :conditions =>
+          has_features_class.find(:first, :conditions =>
             "#{scope_condition} AND #{featured_position_column} = #{(send(featured_position_column).to_i + 1).to_s}"
           )
         end
@@ -219,7 +219,7 @@ module ActiveRecord
           def bottom_item(except = nil)
             conditions = scope_condition
             conditions = "#{conditions} AND #{self.class.primary_key} != #{except.id}" if except
-            acts_as_featured_class.find(:first, :conditions => conditions, :order => "#{featured_position_column} DESC")
+            has_features_class.find(:first, :conditions => conditions, :order => "#{featured_position_column} DESC")
           end
 
           # Forces item to assume the bottom position in the list.
@@ -234,7 +234,7 @@ module ActiveRecord
 
           # This has the effect of moving all the higher items up one.
           def decrement_positions_on_higher_items(position)
-            acts_as_featured_class.update_all(
+            has_features_class.update_all(
               "#{featured_position_column} = (#{featured_position_column} - 1)", "#{scope_condition} AND #{featured_position_column} <= #{position}"
             )
           end
@@ -242,7 +242,7 @@ module ActiveRecord
           # This has the effect of moving all the lower items up one.
           def decrement_positions_on_lower_featured_items
             return unless in_list?
-            acts_as_featured_class.update_all(
+            has_features_class.update_all(
               "#{featured_position_column} = (#{featured_position_column} - 1)", "#{scope_condition} AND #{featured_position_column} > #{send(featured_position_column).to_i}"
             )
           end
@@ -250,21 +250,21 @@ module ActiveRecord
           # This has the effect of moving all the higher items down one.
           def increment_positions_on_higher_items
             return unless in_list?
-            acts_as_featured_class.update_all(
+            has_features_class.update_all(
               "#{featured_position_column} = (#{featured_position_column} + 1)", "#{scope_condition} AND #{featured_position_column} < #{send(featured_position_column).to_i}"
             )
           end
 
           # This has the effect of moving all the lower items down one.
           def increment_positions_on_lower_items(position)
-            acts_as_featured_class.update_all(
+            has_features_class.update_all(
               "#{featured_position_column} = (#{featured_position_column} + 1)", "#{scope_condition} AND #{featured_position_column} >= #{position}"
            )
           end
 
           # Increments position (<tt>featured_position_column</tt>) of all items in the list.
           def increment_positions_on_all_items
-            acts_as_featured_class.update_all(
+            has_features_class.update_all(
               "#{featured_position_column} = (#{featured_position_column} + 1)",  "#{scope_condition}"
             )
           end

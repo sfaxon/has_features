@@ -37,7 +37,7 @@ end
 class FeaturedMixin < Mixin
   self.table_name = 'mixins'
   
-  acts_as_featured :column => "pos", :scope => :parent
+  has_features :column => "pos", :scope => :parent
 end
 
 class FeaturedMixinSub1 < FeaturedMixin
@@ -49,11 +49,11 @@ end
 class FeaturedWithStringScopeMixin < ActiveRecord::Base
   self.table_name = 'mixins'
 
-  acts_as_featured :column => "pos", :scope => 'parent_id = #{parent_id}'
+  has_features :column => "pos", :scope => 'parent_id = #{parent_id}'
 end
 
 class ArrayScopeFeaturedMixin < Mixin
   self.table_name = 'mixins'
 
-  acts_as_featured :column => "pos", :scope => [:parent_id, :parent_type]
+  has_features :column => "pos", :scope => [:parent_id, :parent_type]
 end

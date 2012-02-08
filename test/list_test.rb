@@ -5,7 +5,7 @@ gem 'activerecord', '>= 3.0.0'
 require 'active_record'
 require 'ruby-debug'
 
-require File.join(File.dirname(__FILE__), '../lib/acts_as_featured')
+require File.join(File.dirname(__FILE__), '../lib/has_features')
 require File.join(File.dirname(__FILE__), 'schema')
 
 class FeaturedTest < Test::Unit::TestCase
