@@ -5,7 +5,7 @@ require 'has_features/version'
 Gem::Specification.new do |s|
 
   # Description Meta...
-  s.name        = 'acts_as_list'
+  s.name        = 'has_features'
   s.version     = ActiveRecord::Has::Features::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ['Seth Faxon']
